@@ -6,6 +6,11 @@ if ! command -v gh > /dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v jq > /dev/null 2>&1; then
+    echo "jq could not be found; install it with: sudo apt install jq" 1>&2
+    exit 1
+fi
+
 reset_branch_to_remote()
 {
     if ! git rev-parse --verify "$1" > /dev/null 2>&1; then
@@ -26,7 +31,7 @@ clean_branch()
 }
 
 # Add true-origin remote.
-git remote rm true-origin
+git remote rm true-origin > /dev/null 2>&1
 git remote add true-origin https://github.com/rosedu/workshop-automation
 
 # Abort any previous actions.

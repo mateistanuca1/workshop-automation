@@ -7,7 +7,20 @@ if ! command -v gh > /dev/null 2>&1; then
 fi
 
 # 2. Cleanup (Ignore errors if they don't exist)
-gh repo delete workshop-automation --yes > /dev/null 2>&1
+# WARNING: this destroys the GitHub repository named `workshop-automation`
+# in your account, including a fork of the workshop if that is what it is.
+if gh repo view workshop-automation > /dev/null 2>&1; then
+    owner=$(gh api user -q .login)
+    echo "About to DELETE the existing GitHub repository $owner/workshop-automation."
+    echo "Everything in it (branches, pull requests, issues) will be lost."
+    printf "Type 'yes' to continue: "
+    read -r answer
+    if [ "$answer" != "yes" ]; then
+        echo "Aborted." 1>&2
+        exit 1
+    fi
+    gh repo delete workshop-automation --yes > /dev/null 2>&1
+fi
 git remote rm upstream > /dev/null 2>&1
 
 # 3. Ensure Git is initialized and has a commit
