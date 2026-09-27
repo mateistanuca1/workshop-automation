@@ -54,12 +54,12 @@ gcc bye.c -o bye
 # 0 means success, anything else means an error occurred.
 if [ $? -ne 0 ]; then
     echo "❌ [Error] Code has syntax errors! Commit aborted."
-    rm -rf c-bye/bye
+    rm -f bye
     exit 1
 fi
 
 echo "✅ [Success] Code compiles perfectly!"
-rm -rf c-bye/bye
+rm -f bye
 exit 0
 ```
 
@@ -69,7 +69,7 @@ exit 0
 cd ../..
 ```
 
-5. Now it's time to test it.Open `c-bye/bye.c`, delete a semicolon (`;`) to break the code, and then try to create a commit:
+5. Now it's time to test it. Open `c-bye/bye.c`, delete a semicolon (`;`) to break the code, and then try to create a commit:
 
 ```bash
 git add c-bye/bye.c
@@ -95,6 +95,14 @@ sudo apt update && sudo apt install -y clang-format
 # -Werror forces it to return an error code if style violations are found.
 clang-format --dry-run -Werror c-bye/bye.c
 ```
+
+> [!IMPORTANT]
+> The hook lives in `.git/hooks/`, which is **not** part of the repository contents.
+> `./gh-reset-repo.sh` resets the tracked files, but it does **not** remove your hook: it keeps running on every commit until you delete it yourself:
+>
+> ```bash
+> rm .git/hooks/pre-commit
+> ```
 
 ### Using the `pre-commit` Framework
 
@@ -244,12 +252,6 @@ A container packages your application's binary together with only the bare minim
 
 ### The Container Recipe (Dockerfile)
 
-Your application works on your machine and inside the GitHub virtual machine. But how do we ensure it runs flawlessly anywhere (on servers, a colleague's laptop, or in production)? We containerize it using Docker.
-
-A container packages your application's binary together with only the bare minimum operating system files required to run it, isolated from the rest of the host system (but you already know that from the Docker workshop, hopefully).
-
-### The Container Recipe (Dockerfile)
-
 1. Inside the `c-bye/` directory, create a file named simply `Dockerfile`:
 
 ```bash
@@ -338,6 +340,10 @@ git push upstream main
 ### Do it yourself
 
 In the `python3-hello/` directory, you already have a *Dockerfile*. Use it to create a package and post it on **GHCR**.
+
+> [!NOTE]
+> That `Dockerfile` comes from Unikraft, where it is only used to produce a root filesystem, not a runnable container: it starts `FROM scratch`, copies the Python **standard library** but not the interpreter, and declares no `CMD`. Building it works, but `docker run` on the result fails with `no command specified`.
+> Before publishing it, make it a real container image: keep the interpreter (for example by basing the image on `python:3.10-slim`) and add a `CMD` that runs `hello.py`.
 
 Be creative! Try to create your own workflows.
 
